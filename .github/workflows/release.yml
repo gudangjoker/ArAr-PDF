@@ -1,0 +1,89 @@
+name: Build and Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v1.0.0)'
+        required: false
+        default: 'v1.0.0'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Publish Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Release APK with Gradle
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Prepare Release APK Asset
+        run: |
+          mkdir -p release-output
+          APK_FILE=$(find app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+            echo "::error::Release APK not found in app/build/outputs/apk/release!"
+            exit 1
+          fi
+          echo "Found APK at: $APK_FILE"
+          cp "$APK_FILE" "release-output/ArAr PDF v1.0.0.apk"
+          ls -lh release-output
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ArAr-PDF-v1.0.0
+          path: "release-output/ArAr PDF v1.0.0.apk"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "ArAr PDF v1.0.0"
+          tag_name: ${{ github.ref_name || inputs.version || 'v1.0.0' }}
+          draft: false
+          prerelease: false
+          files: "release-output/ArAr PDF v1.0.0.apk"
+          body: |
+            ## 📱 ArAr PDF v1.0.0 — Rilis Resmi Perdana
+
+            Selamat datang di rilis perdana **ArAr PDF**, aplikasi mobile editor dan manajemen dokumen PDF lengkap yang bekerja **100% offline**, aman, dan responsif.
+
+            ---
+
+            ### ✨ Fitur Utama:
+            * **Kelola Halaman (Page Manager)**: Atur ulang posisi/urutan halaman, hapus halaman yang tidak diinginkan, dan sisipkan halaman kosong atau foto baru.
+            * **Penggabungan PDF (Merge)**: Gabungkan beberapa file PDF sekaligus menjadi satu file dokumen utuh dengan urutan yang fleksibel.
+            * **Konversi Offline**: Ubah koleksi gambar (JPG/PNG) dan dokumen Word (.docx) langsung menjadi dokumen PDF standar A4 tanpa server.
+            * **Pembaca PDF Responsif (Reader)**: Mode *Single Page* dan *Continuous Scroll*, kontrol gestur *pinch-to-zoom/pan*, navigasi drawer thumbnail, slider loncat halaman, mode malam (invert), dan mode sepia.
+            * **Kompresi PDF Cerdas**: Perkecil ukuran file dokumen berbasis kompresi gambar tertanam tanpa merusak ketajaman teks vektor yang tetap bisa diseleksi.
+            * **Ekspor Balik**: Ekspor halaman PDF menjadi gambar resolusi tinggi (PNG/JPG) dan ekstraksi teks (.txt).
+            * **Tandatangan Digital Permanen**: Berkas rilis ditandatangani secara resmi menggunakan sertifikat release keystore permanen (valid hingga 2054) untuk kompatibilitas pembaruan aplikasi tanpa kendala.
+
+            ---
+
+            ### 📥 Unduh Aplikasi:
+            Unduh file APK resmi langsung di bawah:
+            * **`ArAr PDF v1.0.0.apk`**

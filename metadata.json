@@ -1,0 +1,13 @@
+{
+  "name": "ArAr PDF",
+  "description": "Powerful offline PDF editor with page management, PDF merge, document reader, image and Word to PDF conversion, compression, and image export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "PDF page management: reorder, delete selected pages, insert blank pages, and save as a new PDF",
+    "Merge multiple PDF documents with source ordering",
+    "Convert multiple JPG/PNG images and DOCX documents to PDF offline",
+    "PDF reader with page rendering, zoom, navigation, and reading modes",
+    "Compress embedded PDF images and export pages or extracted text",
+    "Share generated documents through Android FileProvider"
+  ]
+}
