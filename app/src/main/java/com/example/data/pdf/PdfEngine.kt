@@ -698,9 +698,17 @@ object PdfEngine {
             }
 
             // Compare stream lengths without materializing large streams as byte arrays.
-            val oldSize = image.stream.createRawInputStream().use { countBytes(it) }
-            val newSize = jpeg.stream.createRawInputStream().use { countBytes(it) }
-            if (oldSize > 0L && newSize in 1 until oldSize) jpeg else null
+            val oldSize = try {
+                image.stream.cosObject.createRawInputStream().use { countBytes(it) }
+            } catch (e: Exception) {
+                0L
+            }
+            val newSize = try {
+                jpeg.stream.cosObject.createRawInputStream().use { countBytes(it) }
+            } catch (e: Exception) {
+                0L
+            }
+            if (oldSize > 0L && newSize > 0L && newSize < oldSize) jpeg else null
         } catch (e: Exception) {
             e.printStackTrace()
             null
